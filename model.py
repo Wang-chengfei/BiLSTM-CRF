@@ -41,48 +41,41 @@ class BiLSTM_CRF(nn.Module):
         emit_score = self.fc(output)  # emit_score[batch_size, length, len(tag2seq)]
         return emit_score
 
-    def predict(self, sentences, chars):
-        """
-        计算预测值
-        sentences:[batch_size, max_len]
-        chars: [batch_size, max_len, max_char_len]
-        """
-        seq_len = sentences.size()[-1]
-        mask = sentences != 1
-        sentences = self.embedding(sentences)  # sentences:[batch_size, length, embedding_dim]
-        chars = self.char_embedding(chars).transpose(1, 2)  # chars: [batch_size, max_len, max_char_len, char_embedding_dim]
-        chars = self.char_cnn(chars).squeeze(1)
-        sentences = torch.cat((sentences, chars), -1)
-        emit_score = self.encode(sentences)
-        if self.config.use_crf:
-            pred = self.crf.decode(emissions=emit_score, mask=mask)
-            for pred_tag in pred:
-                if len(pred_tag) < seq_len:
-                    pred_tag += [len(self.tag2seq) - 1] * (seq_len - len(pred_tag))
-            pred = torch.tensor(pred).to(self.config.device)
-        else:
-            pred = emit_score.transpose(1, 2)
-            pred = pred.argmax(1)
+    def pad_result(self, pred, seq_len):
+        for pred_tag in pred:
+            if len(pred_tag) < seq_len:
+                pred_tag += [0] * (seq_len - len(pred_tag))
+        pred = torch.tensor(pred).to(self.config.device)
         return pred
 
-    def forward(self, sentences, chars, tags):
+    def forward(self, sentences, chars, tags=None):
         """
         计算loss
         sentences:[batch_size, max_len]
         chars: [batch_size, max_len, max_char_len]
         tags:[batch_size, max_len]
         """
+        seq_len = sentences.size()[-1]
         mask = sentences != 1
         sentences = self.embedding(sentences)  # sentences[batch_size, max_len, embedding_dim]
         chars = self.char_embedding(chars).transpose(1, 2)  # chars: [batch_size, max_len, max_char_len, char_embedding_dim]
         chars = self.char_cnn(chars).squeeze(1)
         sentences = torch.cat((sentences, chars), -1)
         emit_score = self.encode(sentences)
-        if self.config.use_crf:
-            loss = self.crf(emissions=emit_score, tags=tags, mask=mask) * -1
+        if tags is None:
+            if self.config.use_crf:
+                pred = self.crf.decode(emissions=emit_score, mask=mask)
+                pred = self.pad_result(pred, seq_len)
+            else:
+                pred = emit_score.transpose(1, 2)
+                pred = pred.argmax(1)
+            return pred
         else:
-            pred = emit_score.transpose(1, 2)
-            loss = torch.nn.functional.cross_entropy(pred, tags)
-        return loss
+            if self.config.use_crf:
+                loss = self.crf(emissions=emit_score, tags=tags, mask=mask) * -1
+            else:
+                loss = torch.nn.functional.cross_entropy(emit_score.transpose(1, 2), tags)
+            return loss
+
 
 

@@ -33,18 +33,20 @@ class Config(object):
         parser.description = 'config for models'
 
         # data directory
-        parser.add_argument('--train_data_path', type=str, default='./CoNLL-2003/eng.train',
+        parser.add_argument('--train_data_path', type=str, default='./CoNLL-2003/train.txt',
                             help='path to load data')
-        parser.add_argument('--eval_data_path', type=str, default='./CoNLL-2003/eng.testa',
+        parser.add_argument('--eval_data_path', type=str, default='./CoNLL-2003/valid.txt',
                             help='path to load data')
-        parser.add_argument('--test_data_path', type=str, default='./CoNLL-2003/eng.testb',
+        parser.add_argument('--test_data_path', type=str, default='./CoNLL-2003/test.txt',
                             help='path to load data')
+        parser.add_argument('--bert_path', type=str, default='E:/PycharmProjects/bert-base-uncased',
+                            help='bert path')
         # word/char embedding
         parser.add_argument('--embedding_path', type=str, default='./model/word_embedding.pt',
                             help='path to load pre-trained word/char embedding')
         parser.add_argument('--embedding_dim', type=int, default=100,
                             help='dimension of word embedding')
-        parser.add_argument('--char_embedding_dim', type=int, default=30,
+        parser.add_argument('--char_embedding_dim', type=int, default=50,
                             help='dimension of character embedding')
         parser.add_argument('--min_freq', type=float, default=1,
                             help='minimum token frequency when constructing vocabulary list')
@@ -62,7 +64,7 @@ class Config(object):
                             help='random seed')
         parser.add_argument('--use_cuda', type=bool, default=True,
                             help='whether need to use cuda')
-        parser.add_argument('--epoch', type=int, default=40,
+        parser.add_argument('--epoch', type=int, default=20,
                             help='max epochs during training')
 
         # hyper parameters
@@ -76,13 +78,13 @@ class Config(object):
                             help='whether to use multi head attention')
         parser.add_argument('--dropout', type=float, default=0.5,
                             help='the possiblity of dropout')
-        parser.add_argument('--hidden_size', type=int, default=100,
+        parser.add_argument('--hidden_size', type=int, default=200,
                             help='the LSTM hidden size')
-        parser.add_argument('--lr', type=float, default=3e-3,
+        parser.add_argument('--lr', type=float, default=2e-3,
                             help='learning rate')
         parser.add_argument('--lr_decay', type=float, default=0.95,
                             help='learning rate decay')
-        parser.add_argument('--weight_decay', type=float, default=0,
+        parser.add_argument('--weight_decay', type=float, default=1e-5,
                             help='weight decay')
 
         args = parser.parse_args()

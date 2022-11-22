@@ -65,6 +65,7 @@ def build_tag2seq(sentences):
     """
     count = dict()
     tag2seq = dict()
+    tag2seq["<PAD>"] = 0
     for sentence in sentences:
         for word in sentence:
             word = word[1]
@@ -73,7 +74,6 @@ def build_tag2seq(sentences):
     count = dict(sorted(count.items(), key=lambda i: i[-1], reverse=True))
     for key, value in count.items():
         tag2seq[key] = len(tag2seq)
-    tag2seq["<PAD>"] = len(tag2seq)
     seq2tag = {value: key for key, value in tag2seq.items()}
     return tag2seq, seq2tag
 

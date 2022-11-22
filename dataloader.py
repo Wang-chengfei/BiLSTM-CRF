@@ -33,7 +33,7 @@ class CoNLLDataset(Dataset):
             else:
                 this_sentence = this_sentence + [1] * (max_len - len(this_sentence))
                 this_characters.extend([[1] for i in range((max_len - len(this_characters)))])
-                this_label = this_label + [len(tag2seq) - 1] * (max_len - len(this_label))
+                this_label = this_label + [0] * (max_len - len(this_label))
             # 裁剪填充char
             padded_this_characters = []
             for character in this_characters:
@@ -73,7 +73,7 @@ def get_dataset(data_path, word2seq, char2seq, tag2seq, max_len=100, max_char_le
 
 
 if __name__ == '__main__':
-    data_path = "CoNLL-2003/eng.train"
+    data_path = "CoNLL-2003/train.txt"
     sentences = load_data(data_path=data_path)
     word2seq, seq2word = build_word2seq(sentences, min_freq=1)
     char2seq, seq2char = build_char2seq(sentences)

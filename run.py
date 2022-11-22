@@ -65,7 +65,7 @@ class Runner(object):
                 sentences, chars, tags = data
                 sentences, chars, tags = sentences.to(self.config.device), chars.to(self.config.device), tags.to(self.config.device)
                 loss = self.model(sentences, chars, tags)
-                pred = self.model.predict(sentences, chars)
+                pred = self.model(sentences, chars)
                 test_loss += loss
                 for key in seq2tag:
                     correct = torch.where(pred == key, key, -1).eq(torch.where(tags == key, key, -2)).sum().item()
@@ -82,9 +82,9 @@ class Runner(object):
             print("{:.3f}  {:.3f}  {:.3f}".format(P, R, F1), end="\t")
             print(tp[i], tp[i] + fp[i], tp[i] + fn[i])
         # 打印综合 P R F1
-        tp = sum(tp[1:len(tp) - 1])
-        fp = sum(fp[1:len(fp) - 1])
-        fn = sum(fn[1:len(fn) - 1])
+        tp = sum(tp[2:])
+        fp = sum(fp[2:])
+        fn = sum(fn[2:])
         P = tp / (tp + fp) if (tp + fp) != 0 else 0
         R = tp / (tp + fn) if (tp + fn) != 0 else 0
         F1 = 2 * P * R / (P + R) if (P + R) != 0 else 0
@@ -104,11 +104,11 @@ if __name__ == '__main__':
     # 准备数据
     train_sentences = load_data(data_path=config.train_data_path)
     word2seq, seq2word = build_word2seq(train_sentences, min_freq=config.min_freq)
-    print("total words:", len(word2seq))
+    print("words dictionary:", len(word2seq))
     char2seq, seq2char = build_char2seq(train_sentences)
-    print("total characters:", len(char2seq))
+    print("characters dictionary:", len(char2seq))
     tag2seq, seq2tag = build_tag2seq(train_sentences)
-    print("total tags:", len(tag2seq))
+    print("tags dictionary:", len(tag2seq))
     train_loader = get_loader(data_path=config.train_data_path, word2seq=word2seq, char2seq=char2seq,
                               tag2seq=tag2seq, max_len=config.max_len,
                               max_char_len=config.max_char_len, batch_size=config.batch_size)
